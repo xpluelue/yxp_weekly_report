@@ -1,0 +1,42 @@
+#include<stdio.h>
+#include<unistd.h>
+#include<string.h>
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+ #include <netinet/in.h>
+ #include <netinet/ip.h>
+ #include <sys/types.h>          /* See NOTES */
+       #include <sys/socket.h>
+
+int main(void)
+{
+	struct sockaddr_in serv;
+	//创建socket设备，返回该设备的文件描述符；
+	int fd=socket(AF_INET,SOCK_STREAM,0);
+	if(fd==-1)
+	{
+		perror("socket");
+		return -1;
+	}
+	serv.sin_family=AF_INET;
+        serv.sin_port=htons(5566);
+	inet_pton(AF_INET,"127.0.0.1",&serv.sin_addr);
+	//使用fd向服务器发起连接：
+	int c_fd=connect(fd,(struct sockaddr*)&serv,sizeof(serv));
+	if(c_fd==-1)
+	{
+		perror("connect");
+		return -1;
+	}
+	char buf[128];
+	//到这里三次握手成功啦；
+	//现在向服务器发送请求信息
+	char *msg="this is a test ....\n";
+	write(fd,msg,strlen(msg)+1);
+	//阻塞等待服务器的回应
+	int r=read(fd,buf,128);
+      //将相应信息输出到显示器;
+      write(1,buf,r);
+      close(fd);
+	return 0;
+}
